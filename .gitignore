@@ -1,0 +1,31 @@
+# Diretório do ambiente virtual
+venv/
+ 
+# Diretórios de cache do Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Arquivos de configuração do IDE
+.idea/
+.vscode/
+
+# Arquivos de configuração do sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de log
+*.log
+
+# Arquivos temporários
+*.tmp
+*.temp
+
+# Arquivos de banco de dados
+*.db
+
+# Arquivos de teste
+*.test
+
+# Arquivos de configuração do ambiente
+.env

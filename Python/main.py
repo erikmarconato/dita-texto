@@ -6,6 +6,7 @@ import json
 import os
 
 CONFIG_FILE = "config.json"
+DEFAULT_PUSH_TO_TALK_KEY = "space"  # Tecla padrão
 
 class PushToTalkApp:
     def __init__(self, root):
@@ -20,7 +21,6 @@ class PushToTalkApp:
         self.root.grid_columnconfigure(1, weight=1)
 
         self.audio_capture = AudioCapture()
-
         self.sidebar_frame = tk.Frame(root, width=150, bg='#2c3e50')
         self.sidebar_frame.grid(row=0, column=0, sticky='ns')
         self.sidebar_frame.grid_propagate(False)
@@ -80,15 +80,30 @@ class PushToTalkApp:
         self.root.bind("<Key>", self.set_push_to_talk_key)
 
     def set_push_to_talk_key(self, event):
-        self.audio_capture.set_push_to_talk_key(event.keysym)
-        self.key_display_label.config(text=f"Tecla Atual: {event.keysym}")
-        messagebox.showinfo("Configuração", f"Tecla 'push to talk' configurada para: {event.keysym}")
-        self.change_key_button.config(text="Escolher Tecla")
-        self.root.unbind("<Key>")
+        try:
+            self.audio_capture.set_push_to_talk_key(event.keysym)
+            self.key_display_label.config(text=f"Tecla Atual: {event.keysym}")
+            messagebox.showinfo("Configuração", f"Tecla 'push to talk' configurada para: {event.keysym}")
+            self.change_key_button.config(text="Escolher Tecla")
+            self.root.unbind("<Key>")
+        except ValueError as e:
+            messagebox.showerror("Erro", f"Tecla inválida: {event.keysym}. Por favor, escolha outra tecla.")
+            self.audio_capture.set_push_to_talk_key(DEFAULT_PUSH_TO_TALK_KEY)  # Redefine a tecla para a padrão
+            self.key_display_label.config(text=f"Tecla Atual: {DEFAULT_PUSH_TO_TALK_KEY}")
+            messagebox.showinfo("Configuração", f"Tecla 'push to talk' configurada para a tecla padrão: {DEFAULT_PUSH_TO_TALK_KEY}")
+            self.change_key_button.config(text="Escolher Tecla")
+            self.root.unbind("<Key>")
 
     def check_for_keypress(self):
-        if hasattr(self.audio_capture, 'push_to_talk_key') and keyboard.is_pressed(self.audio_capture.push_to_talk_key):
-            self.audio_capture.listen_microphone()
+        try:
+            if hasattr(self.audio_capture, 'push_to_talk_key'):
+                if keyboard.is_pressed(self.audio_capture.push_to_talk_key):
+                    self.audio_capture.listen_microphone()
+        except ValueError:
+            # Se a tecla configurada for inválida, altera para a tecla padrão
+            self.audio_capture.set_push_to_talk_key(DEFAULT_PUSH_TO_TALK_KEY)
+            self.key_display_label.config(text=f"Tecla Atual: {DEFAULT_PUSH_TO_TALK_KEY}")
+            messagebox.showinfo("Atenção", f"A tecla configurada não é válida. Alterada para: {DEFAULT_PUSH_TO_TALK_KEY}")
         self.root.after(100, self.check_for_keypress)
 
     def save_config(self):
@@ -104,7 +119,11 @@ class PushToTalkApp:
                 config = json.load(f)
                 push_to_talk_key = config.get("push_to_talk_key", None)
                 if push_to_talk_key:
-                    self.audio_capture.set_push_to_talk_key(push_to_talk_key)
+                    try:
+                        self.audio_capture.set_push_to_talk_key(push_to_talk_key)
+                    except ValueError:
+                        # Se a tecla carregada for inválida, configura para a tecla padrão
+                        self.audio_capture.set_push_to_talk_key(DEFAULT_PUSH_TO_TALK_KEY)
 
     def on_closing(self):
         self.save_config()

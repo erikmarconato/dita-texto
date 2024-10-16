@@ -1,0 +1,15 @@
+### Bibliotecas Necessárias
+
+As bibliotecas necessárias são:
+
+- `speech_recognition`: Para reconhecimento de voz.
+- `keyboard`: Para capturar eventos de teclado.
+- `pyautogui`: Para automação de ações do mouse e teclado.
+- `pyperclip`: Para manipulação da área de transferência.
+
+### Instalação
+
+Para instalar as bibliotecas necessárias, execute:
+
+```bash
+pip install SpeechRecognition keyboard pyautogui pyperclip

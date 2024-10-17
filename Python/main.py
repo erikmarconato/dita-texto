@@ -1,12 +1,16 @@
 import tkinter as tk
 from tkinter import messagebox
-from audio_capture import AudioCapture
-import keyboard
 import json
 import os
+import keyboard
+import requests
+from audio_capture import AudioCapture
+import pyautogui
+import pyperclip
 
 CONFIG_FILE = "config.json"
-DEFAULT_PUSH_TO_TALK_KEY = "space"  # Tecla padrão
+DEFAULT_PUSH_TO_TALK_KEY = "space"
+textFormat = ""
 
 class PushToTalkApp:
     def __init__(self, root):
@@ -88,7 +92,7 @@ class PushToTalkApp:
             self.root.unbind("<Key>")
         except ValueError as e:
             messagebox.showerror("Erro", f"Tecla inválida: {event.keysym}. Por favor, escolha outra tecla.")
-            self.audio_capture.set_push_to_talk_key(DEFAULT_PUSH_TO_TALK_KEY)  # Redefine a tecla para a padrão
+            self.audio_capture.set_push_to_talk_key(DEFAULT_PUSH_TO_TALK_KEY)
             self.key_display_label.config(text=f"Tecla Atual: {DEFAULT_PUSH_TO_TALK_KEY}")
             messagebox.showinfo("Configuração", f"Tecla 'push to talk' configurada para a tecla padrão: {DEFAULT_PUSH_TO_TALK_KEY}")
             self.change_key_button.config(text="Escolher Tecla")
@@ -99,12 +103,54 @@ class PushToTalkApp:
             if hasattr(self.audio_capture, 'push_to_talk_key'):
                 if keyboard.is_pressed(self.audio_capture.push_to_talk_key):
                     self.audio_capture.listen_microphone()
+                    raw_text = self.audio_capture.get_transcribed_text()
+                    improved_text = self.chamar_api(raw_text)
+                    print(f"Texto transcrito: {raw_text}")
+                    print(f"Texto melhorado: {improved_text}")
+                    self.improved_text = improved_text
+                    pyperclip.copy(improved_text)
+                    pyautogui.hotkey("ctrl", "v")
+                    
         except ValueError:
-            # Se a tecla configurada for inválida, altera para a tecla padrão
             self.audio_capture.set_push_to_talk_key(DEFAULT_PUSH_TO_TALK_KEY)
             self.key_display_label.config(text=f"Tecla Atual: {DEFAULT_PUSH_TO_TALK_KEY}")
             messagebox.showinfo("Atenção", f"A tecla configurada não é válida. Alterada para: {DEFAULT_PUSH_TO_TALK_KEY}")
         self.root.after(100, self.check_for_keypress)
+
+    def chamar_api(self, texto):
+        url = "https://chatgpt-42.p.rapidapi.com/gpt4"
+
+        payload = {
+            "messages": [
+                {
+                    "role": "user",
+                    "content": "melhore esse texto, só escreva o texto melhorado nada mais ou faça o que eu te pedi, caso não for nada pra mensagem n escreva nada " + texto
+                }
+            ],
+            "web_access": False
+        }
+        headers = {
+            "x-rapidapi-key": "23f426539amsh380613e9e0964f5p1f3f99jsn63e443ca7939",
+            "x-rapidapi-host": "chatgpt-42.p.rapidapi.com",
+            "Content-Type": "application/json"
+        }
+
+        try:
+            response = requests.post(url, json=payload, headers=headers)
+            response.raise_for_status()
+            api_response = response.json()
+            print(f"Resposta da API: {api_response}")
+            
+            if 'result' in api_response:
+                return api_response['result']
+            else:
+                return "Erro: 'result' não encontrado na resposta da API."
+        except Exception as e:
+            print(f"Erro ao chamar a API: {e}")
+            return "Erro ao processar o texto."
+
+    def display_improved_text(self, improved_text):
+        self.title_label.config(text=improved_text)
 
     def save_config(self):
         config = {
@@ -122,7 +168,6 @@ class PushToTalkApp:
                     try:
                         self.audio_capture.set_push_to_talk_key(push_to_talk_key)
                     except ValueError:
-                        # Se a tecla carregada for inválida, configura para a tecla padrão
                         self.audio_capture.set_push_to_talk_key(DEFAULT_PUSH_TO_TALK_KEY)
 
     def on_closing(self):

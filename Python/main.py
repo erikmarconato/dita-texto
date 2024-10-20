@@ -15,7 +15,7 @@ textFormat = ""
 class PushToTalkApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Push to Talk")
+        self.root.title("Dita Texto")
         self.root.geometry("600x400")
         self.root.minsize(600, 400)
         self.root.configure(bg='#34495e')
@@ -36,7 +36,7 @@ class PushToTalkApp:
         self.main_frame = tk.Frame(root, bg='#ecf0f1')
         self.main_frame.grid(row=0, column=1, sticky='nsew')
 
-        self.title_label = tk.Label(self.main_frame, text="Bem-vindo ao Push to Talk", bg='#ecf0f1', font=('Arial', 16))
+        self.title_label = tk.Label(self.main_frame, text="Bem-vindo ao Dita Texto", bg='#ecf0f1', font=('Arial', 16))
         self.title_label.pack(pady=20)
 
         self.instructions_label = tk.Label(self.main_frame, text="Altere o botão do Push to Talk:", bg='#ecf0f1', font=('Arial', 12))
@@ -63,7 +63,7 @@ class PushToTalkApp:
         return button
 
     def show_about(self):
-        messagebox.showinfo("Sobre", "Aplicação Push to Talk - versão 1.0\nDesenvolvido por [Seu Nome]")
+        messagebox.showinfo("Sobre", "Aplicação Dita Texto - versão 1.0\nDesenvolvido por Érik Santana Marconato")
 
     def show_plans(self):
         messagebox.showinfo("Planos", "Aqui você pode adicionar seus planos futuros para a aplicação.")

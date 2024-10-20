@@ -1,7 +1,5 @@
 import speech_recognition as sr
 import keyboard
-import pyautogui
-import pyperclip
 
 class AudioCapture:
     def __init__(self):
